@@ -53,29 +53,13 @@ var hospitalIcon = L.icon({
 });
 
 // Load GeoJSON files
-fetch('LGA_boundary.json')
-  .then(res => res.json())
-  .then(data => {
-    L.geoJSON(data, {
-      style: {
-        color: 'black',  // Black border for LGA boundary
-        fillColor: 'none',  // Hollow inside
-        weight: 2
-      },
-      onEachFeature: function (feature, layer) {
-        layer.on('click', function () {
-          document.getElementById('info').innerText = "Selected LGA: " + feature.properties.LGA;
-        });
-      }
-    }).addTo(map);
-  });
 
 fetch('Access_Above_5KM.json')
   .then(res => res.json())
   .then(data => {
     L.geoJSON(data, {
       style: {
-        color: 'red',
+        color: 'rgba(255, 0, 0, 0.5)',  // Same as fill color (semi-transparent red)
         weight: 2,
         fillColor: 'rgba(255, 0, 0, 0.5)',  // Semi-transparent red
         fillOpacity: 0.5  // 50% opacity
@@ -88,7 +72,7 @@ fetch('Access_Within_5KM.json')
   .then(data => {
     L.geoJSON(data, {
       style: {
-        color: 'green',
+        color: 'rgba(0, 255, 0, 0.5)',  // Same as fill color (semi-transparent green)
         weight: 2,
         fillColor: 'rgba(0, 255, 0, 0.5)',  // Semi-transparent green
         fillOpacity: 0.5  // 50% opacity
@@ -107,6 +91,24 @@ fetch('PHC.json')
     }).addTo(map);
   });
 
+// Load LGA_boundary.json as the last layer to make it appear on top
+fetch('LGA_boundary.json')
+  .then(res => res.json())
+  .then(data => {
+    L.geoJSON(data, {
+      style: {
+        color: 'black',  // Black border for LGA boundary
+        fillColor: 'none',  // Hollow inside
+        weight: 4  // Increased border thickness
+      },
+      onEachFeature: function (feature, layer) {
+        layer.on('click', function () {
+          document.getElementById('info').innerText = "Selected LGA: " + feature.properties.LGA;
+        });
+      }
+    }).addTo(map);  // This is now the last layer added, so it will be on top
+  });
+
 // Add scale
 L.control.scale().addTo(map);
 
@@ -116,8 +118,8 @@ var legend = L.control({ position: 'bottomright' });
 legend.onAdd = function (map) {
     var div = L.DomUtil.create('div', 'info legend');
     div.innerHTML += '<i style="background: #800000"></i> PHC<br>';
-    div.innerHTML += '<i style="background: rgba(255, 0, 0, 0.5); border: 2px solid red;"></i> Access Above 5KM<br>';
-    div.innerHTML += '<i style="background: rgba(0, 255, 0, 0.5); border: 2px solid green;"></i> Access Within 5KM<br>';
+    div.innerHTML += '<i style="background: rgba(255, 0, 0, 0.5); border: 2px solid rgba(255, 0, 0, 0.5);"></i> Access Above 5KM<br>';
+    div.innerHTML += '<i style="background: rgba(0, 255, 0, 0.5); border: 2px solid rgba(0, 255, 0, 0.5);"></i> Access Within 5KM<br>';
     div.innerHTML += '<i style="background: none; border: 2px solid black"></i> LGA Boundary<br>';
     return div;
 };
