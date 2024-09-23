@@ -28,12 +28,6 @@
       margin-top: 10px;
       font-weight: bold;
     }
-    /* CSS for bold LGA names */
-    .bold-tooltip {
-      font-size: 16px;
-      font-weight: bold;
-      color: black;
-    }
   </style>
 </head>
 <body>
@@ -91,8 +85,16 @@ fetch('PHC.json')
   .then(data => {
     L.geoJSON(data, {
       pointToLayer: function (feature, latlng) {
+        // Extract the Facility Name
+        var facilityName = feature.properties.Facility_N;
+
+        // Extract LGA and remove "kt"
+        var lga = feature.properties.LGA;
+        var formattedLGA = lga.replace(/^kt\s+/i, '');  // Remove "kt" prefix from LGA
+
+        // Bind the popup with Facility Name and LGA in brackets
         return L.marker(latlng, { icon: hospitalIcon })
-          .bindPopup(feature.properties.Facility_N);  // Show Facility Name in popup
+          .bindPopup(facilityName + " (" + formattedLGA + ")");  // Show Facility Name and LGA in the popup
       }
     }).addTo(map);
   });
@@ -108,13 +110,6 @@ fetch('LGA_boundary.json')
         weight: 4  // Increased border thickness
       },
       onEachFeature: function (feature, layer) {
-        // Display the LGA name in bold with a persistent label
-        layer.bindTooltip(
-          '<span class="bold-tooltip">' + feature.properties.LGA + '</span>', 
-          { permanent: true, direction: 'center', className: 'bold-tooltip' }
-        );
-        
-        // On click, update the info div
         layer.on('click', function () {
           document.getElementById('info').innerText = "Selected LGA: " + feature.properties.LGA;
         });
