@@ -58,9 +58,9 @@ fetch('Access_Above_5KM.json')
   .then(data => {
     L.geoJSON(data, {
       style: {
-        color: 'rgba(255, 0, 0, 0.5)',
+        color: 'rgba(0, 0, 0, 0)',  // Transparent border
         weight: 2,
-        fillColor: 'rgba(255, 0, 0, 0.5)',
+        fillColor: 'rgba(255, 0, 0, 0.5)',  // Semi-transparent red
         fillOpacity: 0.5
       }
     }).addTo(map);
@@ -71,9 +71,9 @@ fetch('Access_Within_5KM.json')
   .then(data => {
     L.geoJSON(data, {
       style: {
-        color: 'rgba(0, 255, 0, 0.5)',
+        color: 'rgba(0, 0, 0, 0)',  // Transparent border
         weight: 2,
-        fillColor: 'rgba(0, 255, 0, 0.5)',
+        fillColor: 'rgba(0, 255, 0, 0.5)',  // Semi-transparent green
         fillOpacity: 0.5
       }
     }).addTo(map);
@@ -100,7 +100,7 @@ fetch('LGA_boundary.json')
     L.geoJSON(data, {
       style: {
         color: 'black',
-        weight: 4,           // Reduced weight for the LGA boundary
+        weight: 4,           // Weight for the LGA boundary
         fillColor: 'none',
         opacity: 1,
         zIndex: 1000  
@@ -122,8 +122,8 @@ var legend = L.control({ position: 'bottomright' });
 legend.onAdd = function (map) {
     var div = L.DomUtil.create('div', 'info legend');
     div.innerHTML += '<img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" style="width: 20px; height: 20px; vertical-align: middle;"> PHC<br>';
-    div.innerHTML += '<i style="background: rgba(255, 0, 0, 0.5); border: 2px solid rgba(255, 0, 0, 0.5);"></i> Access Above 5KM<br>';
-    div.innerHTML += '<i style="background: rgba(0, 255, 0, 0.5); border: 2px solid rgba(0, 255, 0, 0.5);"></i> Access Within 5KM<br>';
+    div.innerHTML += '<i style="background: rgba(255, 0, 0, 0.5); border: 2px solid rgba(0, 0, 0, 0);"></i> Access Above 5KM<br>';
+    div.innerHTML += '<i style="background: rgba(0, 255, 0, 0.5); border: 2px solid rgba(0, 0, 0, 0);"></i> Access Within 5KM<br>';
     div.innerHTML += '<i style="background: none; border: 2px solid black"></i> LGA Boundary<br>';
     return div;
 };
