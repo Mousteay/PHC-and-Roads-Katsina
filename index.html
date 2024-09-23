@@ -100,10 +100,9 @@ fetch('LGA_boundary.json')
     L.geoJSON(data, {
       style: {
         color: 'black',
-        weight: 6,
+        weight: 4,           // Reduced weight for the LGA boundary
         fillColor: 'none',
         opacity: 1,
-        // Set zIndex to a higher value
         zIndex: 1000  
       },
       onEachFeature: function (feature, layer) {
