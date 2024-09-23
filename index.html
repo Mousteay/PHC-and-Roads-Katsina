@@ -53,16 +53,15 @@ var hospitalIcon = L.icon({
 });
 
 // Load GeoJSON files
-
 fetch('Access_Above_5KM.json')
   .then(res => res.json())
   .then(data => {
     L.geoJSON(data, {
       style: {
-        color: 'rgba(255, 0, 0, 0.5)',  // Same as fill color (semi-transparent red)
+        color: 'rgba(255, 0, 0, 0.5)',
         weight: 2,
-        fillColor: 'rgba(255, 0, 0, 0.5)',  // Semi-transparent red
-        fillOpacity: 0.5  // 50% opacity
+        fillColor: 'rgba(255, 0, 0, 0.5)',
+        fillOpacity: 0.5
       }
     }).addTo(map);
   });
@@ -72,10 +71,10 @@ fetch('Access_Within_5KM.json')
   .then(data => {
     L.geoJSON(data, {
       style: {
-        color: 'rgba(0, 255, 0, 0.5)',  // Same as fill color (semi-transparent green)
+        color: 'rgba(0, 255, 0, 0.5)',
         weight: 2,
-        fillColor: 'rgba(0, 255, 0, 0.5)',  // Semi-transparent green
-        fillOpacity: 0.5  // 50% opacity
+        fillColor: 'rgba(0, 255, 0, 0.5)',
+        fillOpacity: 0.5
       }
     }).addTo(map);
   });
@@ -85,16 +84,11 @@ fetch('PHC.json')
   .then(data => {
     L.geoJSON(data, {
       pointToLayer: function (feature, latlng) {
-        // Extract the Facility Name
         var facilityName = feature.properties.Facility_N;
-
-        // Extract LGA and remove "kt"
         var lga = feature.properties.LGA;
-        var formattedLGA = lga.replace(/^kt\s+/i, '');  // Remove "kt" prefix from LGA
-
-        // Bind the popup with Facility Name and LGA in brackets
+        var formattedLGA = lga.replace(/^kt\s+/i, '');
         return L.marker(latlng, { icon: hospitalIcon })
-          .bindPopup(facilityName + " (" + formattedLGA + ")");  // Show Facility Name and LGA in the popup
+          .bindPopup(facilityName + " (" + formattedLGA + ")");
       }
     }).addTo(map);
   });
@@ -105,16 +99,19 @@ fetch('LGA_boundary.json')
   .then(data => {
     L.geoJSON(data, {
       style: {
-        color: 'black',  // Black border for LGA boundary
-        fillColor: 'none',  // Hollow inside
-        weight: 4  // Increased border thickness
+        color: 'black',
+        weight: 6,
+        fillColor: 'none',
+        opacity: 1,
+        // Set zIndex to a higher value
+        zIndex: 1000  
       },
       onEachFeature: function (feature, layer) {
         layer.on('click', function () {
           document.getElementById('info').innerText = "Selected LGA: " + feature.properties.LGA;
         });
       }
-    }).addTo(map);  // This is now the last layer added, so it will be on top
+    }).addTo(map);  // This ensures it's added last
   });
 
 // Add scale
@@ -125,15 +122,10 @@ var legend = L.control({ position: 'bottomright' });
 
 legend.onAdd = function (map) {
     var div = L.DomUtil.create('div', 'info legend');
-
-    // Add PHC icon with the image tag and use the same URL as the hospitalIcon
     div.innerHTML += '<img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" style="width: 20px; height: 20px; vertical-align: middle;"> PHC<br>';
-    
-    // Add other legend items (colored blocks for the other map layers)
     div.innerHTML += '<i style="background: rgba(255, 0, 0, 0.5); border: 2px solid rgba(255, 0, 0, 0.5);"></i> Access Above 5KM<br>';
     div.innerHTML += '<i style="background: rgba(0, 255, 0, 0.5); border: 2px solid rgba(0, 255, 0, 0.5);"></i> Access Within 5KM<br>';
     div.innerHTML += '<i style="background: none; border: 2px solid black"></i> LGA Boundary<br>';
-    
     return div;
 };
 
