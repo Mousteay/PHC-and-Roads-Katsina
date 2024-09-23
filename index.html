@@ -125,10 +125,15 @@ var legend = L.control({ position: 'bottomright' });
 
 legend.onAdd = function (map) {
     var div = L.DomUtil.create('div', 'info legend');
-    div.innerHTML += '<i style="background: #800000"></i> PHC<br>';
+
+    // Add PHC icon with the image tag and use the same URL as the hospitalIcon
+    div.innerHTML += '<img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" style="width: 20px; height: 20px; vertical-align: middle;"> PHC<br>';
+    
+    // Add other legend items (colored blocks for the other map layers)
     div.innerHTML += '<i style="background: rgba(255, 0, 0, 0.5); border: 2px solid rgba(255, 0, 0, 0.5);"></i> Access Above 5KM<br>';
     div.innerHTML += '<i style="background: rgba(0, 255, 0, 0.5); border: 2px solid rgba(0, 255, 0, 0.5);"></i> Access Within 5KM<br>';
     div.innerHTML += '<i style="background: none; border: 2px solid black"></i> LGA Boundary<br>';
+    
     return div;
 };
 
