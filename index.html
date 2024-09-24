@@ -58,7 +58,7 @@ fetch('Access_Above_5KM.json')
   .then(data => {
     L.geoJSON(data, {
       style: {
-        color: 'rgba(255, 0, 0, 0.5)',  // Red border (for compatibility)
+        color: 'rgba(255, 0, 0, 0)',  // Transparent border
         weight: 2,
         fillColor: 'rgba(255, 0, 0, 0.5)',  // Semi-transparent red
         fillOpacity: 0.5
@@ -71,7 +71,7 @@ fetch('Access_Within_5KM.json')
   .then(data => {
     L.geoJSON(data, {
       style: {
-        color: 'rgba(0, 255, 0, 0.5)',  // Green border (for compatibility)
+        color: 'rgba(0, 255, 0, 0)',  // Transparent border
         weight: 2,
         fillColor: 'rgba(0, 255, 0, 0.5)',  // Semi-transparent green
         fillOpacity: 0.5
@@ -97,20 +97,28 @@ fetch('PHC.json')
 fetch('LGA_boundary.json')
   .then(res => res.json())
   .then(data => {
-    L.geoJSON(data, {
+    var lgaBoundary = L.geoJSON(data, {
       style: {
         color: 'black',
-        weight: 6,
+        weight: 4,  // Reduced thickness
         fillColor: 'none',
         opacity: 1,
-        zIndex: 1000  
+        zIndex: 1000  // High zIndex to keep on top
       },
       onEachFeature: function (feature, layer) {
         layer.on('click', function () {
           document.getElementById('info').innerText = "Selected LGA: " + feature.properties.LGA;
         });
       }
-    }).addTo(map);  // This ensures it's added last
+    }).addTo(map);
+    
+    // Ensure it's always on top
+    lgaBoundary.bringToFront();
+
+    // Listen for layeradd event to keep the LGA boundary on top
+    map.on('layeradd', function() {
+        lgaBoundary.bringToFront();
+    });
   });
 
 // Add scale
