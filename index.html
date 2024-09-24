@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Katsina State Map</title>
+  <title>Katsina State Map with Crosshatch Pattern</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
@@ -52,15 +52,57 @@ var hospitalIcon = L.icon({
   popupAnchor: [0, -10]
 });
 
+// Define crosshatch pattern
+var crosshatchPattern = new L.Pattern({
+  width: 10,
+  height: 10,
+  patternUnits: 'userSpaceOnUse'
+});
+
+crosshatchPattern.addShape(new L.PatternPath({
+  d: "M 0 0 L 10 10",
+  stroke: '#ff0000',  // Red stroke for the first diagonal
+  weight: 1
+}));
+
+crosshatchPattern.addShape(new L.PatternPath({
+  d: "M 10 0 L 0 10",
+  stroke: '#ff0000',  // Red stroke for the second diagonal
+  weight: 1
+}));
+
+crosshatchPattern.addTo(map);
+
+// Another pattern for green area
+var crosshatchPatternGreen = new L.Pattern({
+  width: 10,
+  height: 10,
+  patternUnits: 'userSpaceOnUse'
+});
+
+crosshatchPatternGreen.addShape(new L.PatternPath({
+  d: "M 0 0 L 10 10",
+  stroke: '#00ff00',  // Green stroke for the first diagonal
+  weight: 1
+}));
+
+crosshatchPatternGreen.addShape(new L.PatternPath({
+  d: "M 10 0 L 0 10",
+  stroke: '#00ff00',  // Green stroke for the second diagonal
+  weight: 1
+}));
+
+crosshatchPatternGreen.addTo(map);
+
 // Load GeoJSON files
 fetch('Access_Above_5KM.json')
   .then(res => res.json())
   .then(data => {
     L.geoJSON(data, {
       style: {
+        fillPattern: crosshatchPattern,  // Apply crosshatch pattern
         color: 'rgba(255, 0, 0, 0)',  // Transparent border
         weight: 2,
-        fillColor: 'rgba(255, 0, 0, 0.5)',  // Semi-transparent red
         fillOpacity: 0.5
       }
     }).addTo(map);
@@ -71,9 +113,9 @@ fetch('Access_Within_5KM.json')
   .then(data => {
     L.geoJSON(data, {
       style: {
+        fillPattern: crosshatchPatternGreen,  // Apply green crosshatch pattern
         color: 'rgba(0, 255, 0, 0)',  // Transparent border
         weight: 2,
-        fillColor: 'rgba(0, 255, 0, 0.5)',  // Semi-transparent green
         fillOpacity: 0.5
       }
     }).addTo(map);
@@ -130,8 +172,8 @@ var legend = L.control({ position: 'bottomright' });
 legend.onAdd = function (map) {
     var div = L.DomUtil.create('div', 'info legend');
     div.innerHTML += '<img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" style="width: 20px; height: 20px; vertical-align: middle;"> PHC<br>';
-    div.innerHTML += '<i style="background: rgba(255, 0, 0, 0.5); border: 2px solid rgba(255, 0, 0, 0.5);"></i> Red >5KM Access Zone<br>';
-    div.innerHTML += '<i style="background: rgba(0, 255, 0, 0.5); border: 2px solid rgba(0, 255, 0, 0.5);"></i> Green 5KM Access Zone<br>';
+    div.innerHTML += '<i style="background: url(data:image/svg+xml;base64,PHYR_64_ENCODED_PATTERN);" width="20px" height="10px"></i> Red >5KM Access Zone<br>';
+    div.innerHTML += '<i style="background: url(data:image/svg+xml;base64,PHYR_64_ENCODED_PATTERN);" width="20px" height="10px"></i> Green 5KM Access Zone<br>';
     div.innerHTML += '<i style="background: none; border: 2px solid black"></i> LGA Boundary<br>';
     return div;
 };
