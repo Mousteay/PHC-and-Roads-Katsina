@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
+  <title>Katsina State Map</title>
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Katsina State Map with Crosshatch Pattern</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-pattern/dist/leaflet.pattern.css" />
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
@@ -18,6 +18,11 @@
       padding: 10px;
       border-radius: 5px;
       box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    }
+    .legend i {
+      width: 20px;
+      height: 10px;
+      display: inline-block;
     }
     #info {
       margin-top: 10px;
@@ -47,98 +52,91 @@ var hospitalIcon = L.icon({
   popupAnchor: [0, -10]
 });
 
-// Load GeoJSON files and handle errors
-function loadGeoJSON(url, style, onEachFeature) {
-  fetch(url)
-    .then(res => {
-      if (!res.ok) throw new Error('Network response was not ok');
-      return res.json();
-    })
-    .then(data => {
-      L.geoJSON(data, {
-        style: style,
-        onEachFeature: onEachFeature
-      }).addTo(map);
-    })
-    .catch(error => console.error('Error loading GeoJSON:', error));
-}
-
-// Define crosshatch patterns
-var crosshatchPattern = L.pattern({
-  width: 10,
-  height: 10,
-  patternUnits: 'userSpaceOnUse'
-}).addShape(new L.PatternPath({
-  d: "M 0 0 L 10 10",
-  stroke: '#ff0000',  // Red stroke
-  weight: 2
-})).addShape(new L.PatternPath({
-  d: "M 10 0 L 0 10",
-  stroke: '#ff0000',  // Red stroke
-  weight: 2
-}));
-
-var crosshatchPatternGreen = L.pattern({
-  width: 10,
-  height: 10,
-  patternUnits: 'userSpaceOnUse'
-}).addShape(new L.PatternPath({
-  d: "M 0 0 L 10 10",
-  stroke: '#00ff00',  // Green stroke
-  weight: 2
-})).addShape(new L.PatternPath({
-  d: "M 10 0 L 0 10",
-  stroke: '#00ff00',  // Green stroke
-  weight: 2
-}));
-
-// Load GeoJSON layers
-loadGeoJSON('Access_Above_5KM.json', {
-  fillPattern: crosshatchPattern,
-  color: 'rgba(255, 0, 0, 0)',  // Transparent border
-  weight: 2
-});
-
-loadGeoJSON('Access_Within_5KM.json', {
-  fillPattern: crosshatchPatternGreen,
-  color: 'rgba(0, 255, 0, 0)',  // Transparent border
-  weight: 2
-});
-
-// Load PHC points
-loadGeoJSON('PHC.json', null, function (feature, layer) {
-  var facilityName = feature.properties.Facility_N;
-  var lga = feature.properties.LGA;
-  var formattedLGA = lga.replace(/^kt\s+/i, '');
-  layer.bindPopup(facilityName + " (" + formattedLGA + ")");
-});
-
-// Load LGA boundaries as the last layer
-loadGeoJSON('LGA_boundary.json', {
-  color: 'black',
-  weight: 4,  // Boundary thickness
-  fillColor: 'none'
-}, function (feature, layer) {
-  layer.on('click', function () {
-    document.getElementById('info').innerText = "Selected LGA: " + feature.properties.LGA;
+// Load GeoJSON files
+fetch('Access_Above_5KM.json')
+  .then(res => res.json())
+  .then(data => {
+    L.geoJSON(data, {
+      style: {
+        color: 'rgba(255, 0, 0, 0)',  // Transparent border
+        weight: 2,
+        fillColor: 'rgba(255, 0, 0, 0.5)',  // Semi-transparent red
+        fillOpacity: 0.5
+      }
+    }).addTo(map);
   });
-});
+
+fetch('Access_Within_5KM.json')
+  .then(res => res.json())
+  .then(data => {
+    L.geoJSON(data, {
+      style: {
+        color: 'rgba(0, 255, 0, 0)',  // Transparent border
+        weight: 2,
+        fillColor: 'rgba(0, 255, 0, 0.5)',  // Semi-transparent green
+        fillOpacity: 0.5
+      }
+    }).addTo(map);
+  });
+
+fetch('PHC.json')
+  .then(res => res.json())
+  .then(data => {
+    L.geoJSON(data, {
+      pointToLayer: function (feature, latlng) {
+        var facilityName = feature.properties.Facility_N;
+        var lga = feature.properties.LGA;
+        var formattedLGA = lga.replace(/^kt\s+/i, '');
+        return L.marker(latlng, { icon: hospitalIcon })
+          .bindPopup(facilityName + " (" + formattedLGA + ")");
+      }
+    }).addTo(map);
+  });
+
+// Load LGA_boundary.json as the last layer to make it appear on top
+fetch('LGA_boundary.json')
+  .then(res => res.json())
+  .then(data => {
+    var lgaBoundary = L.geoJSON(data, {
+      style: {
+        color: 'black',
+        weight: 4,  // Reduced thickness
+        fillColor: 'none',
+        opacity: 1,
+        zIndex: 1000  // High zIndex to keep on top
+      },
+      onEachFeature: function (feature, layer) {
+        layer.on('click', function () {
+          document.getElementById('info').innerText = "Selected LGA: " + feature.properties.LGA;
+        });
+      }
+    }).addTo(map);
+    
+    // Ensure it's always on top
+    lgaBoundary.bringToFront();
+
+    // Listen for layeradd event to keep the LGA boundary on top
+    map.on('layeradd', function() {
+        lgaBoundary.bringToFront();
+    });
+  });
 
 // Add scale
 L.control.scale().addTo(map);
 
 // Add legend
 var legend = L.control({ position: 'bottomright' });
-legend.onAdd = function (map) {
-  var div = L.DomUtil.create('div', 'info legend');
-  div.innerHTML += '<img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" style="width: 20px; height: 20px; vertical-align: middle;"> PHC<br>';
-  div.innerHTML += '<i style="background: rgba(255, 0, 0, 0.5);"></i> Red >5KM Access Zone<br>';
-  div.innerHTML += '<i style="background: rgba(0, 255, 0, 0.5);"></i> Green 5KM Access Zone<br>';
-  div.innerHTML += '<i style="background: none; border: 2px solid black"></i> LGA Boundary<br>';
-  return div;
-};
-legend.addTo(map);
 
+legend.onAdd = function (map) {
+    var div = L.DomUtil.create('div', 'info legend');
+    div.innerHTML += '<img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" style="width: 20px; height: 20px; vertical-align: middle;"> PHC<br>';
+    div.innerHTML += '<i style="background: rgba(255, 0, 0, 0.5); border: 2px solid rgba(255, 0, 0, 0.5);"></i> >5KM Access Zone<br>'; // Updated text
+    div.innerHTML += '<i style="background: rgba(0, 255, 0, 0.5); border: 2px solid rgba(0, 255, 0, 0.5);"></i> 5KM Access Zone<br>'; // Updated text
+    div.innerHTML += '<i style="background: none; border: 2px solid black"></i> LGA Boundary<br>';
+    return div;
+};
+
+legend.addTo(map);
 </script>
 
 </body>
